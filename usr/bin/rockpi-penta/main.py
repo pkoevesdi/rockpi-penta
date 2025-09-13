@@ -30,11 +30,16 @@ def receive_key(q):
 
 def main():
     if sys.argv[-1] == 'on':
+        if '4c+' in misc.check_output('cat /proc/device-tree/model').lower():
+            misc.check_call('echo host > /sys/devices/platform/usb0/dwc3_mode')
         if top_board:
             oled.welcome()
+        misc.disk_turn_on()
     elif sys.argv[-1] == 'off':
         if top_board:
+            fan.turn_off()
             oled.goodbye()
+        misc.disk_turn_off()
         exit(0)
 
 

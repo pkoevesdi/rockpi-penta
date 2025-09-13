@@ -7,7 +7,6 @@ pin13 = mraa.Pwm(13)
 pin13.period_us(40)
 pin13.enable(True)
 
-
 def read_temp():
     with open('/sys/class/thermal/thermal_zone0/temp') as f:
         t = int(f.read().strip()) / 1000.0
@@ -18,7 +17,7 @@ def get_dc(cache={}):
     if misc.conf['run'].value == 0:
         return 0.999
 
-    if time.time() - cache.get('time', 0) > 60:
+    if time.time() - cache.get('time', 0) > misc.conf["fan"]["interval"]:
         cache['time'] = time.time()
         cache['dc'] = misc.fan_temp2dc(read_temp())
 
@@ -29,6 +28,14 @@ def change_dc(dc, cache={}):
     if dc != cache.get('dc'):
         cache['dc'] = dc
         pin13.write(dc)
+        if misc.conf["mqtt"]["host"]:
+            from paho.mqtt import client as mqtt
+            client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1,"rockpi-fan")
+            client.username_pw_set(misc.conf["mqtt"]["username"], misc.conf["mqtt"]["password"])
+            client.connect(misc.conf["mqtt"]["host"], misc.conf["mqtt"]["port"])
+            client.loop_start()
+            client.publish("homeserver/fan_dc", payload=dc)
+            client.loop_stop()
 
 
 def running():
