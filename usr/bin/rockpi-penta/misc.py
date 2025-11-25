@@ -221,7 +221,7 @@ def fan_temp2dc(t):
             conf["fan"]["silentend"],
             datetime.datetime.now().time(),
         ):
-            min_dc = max(min(1 - conf["fan"]["silentmaxlv"], 0.999), 0)
+            min_dc = max(min(1 - conf["fan"]["silentmaxlv"], 0.85), 0)
             if conf["general"]["debug"]:
                 logger.info(f"Silent Time, min_dc = {min_dc}")
         else:
@@ -238,7 +238,7 @@ def fan_temp2dc(t):
                 if t >= conf["fan"][lv]:
                     break
 
-        dc = min(max(dc, min_dc), 0.999)
+        dc = min(max(dc, min_dc), 0.85)
 
     if conf["general"]["debug"]:
         logger.info(f"temp = {t}, fan dc = {dc}")
